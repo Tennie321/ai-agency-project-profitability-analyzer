@@ -1,0 +1,22 @@
+{
+  "product_name": "Agency Project Profitability Analyzer",
+  "version": "1.0.0",
+  "description": "Zero-dependency Python CLI tool for agencies to track project margins, budget burn rates, and client profitability. Features interactive HTML dashboard, CSV exports, and customizable settings.",
+  "pricing": {
+    "standalone": 14,
+    "bundle": 37,
+    "agency_license": 97
+  },
+  "features": [
+    "Project budget tracking with margin calculations",
+    "Time entry logging with cost vs bill rate tracking",
+    "Profitability report (console, JSON, CSV)",
+    "Interactive HTML dashboard with visual health indicators",
+    "Customizable settings (bill rate, overhead, target margin)",
+    "Portfolio-wide summary statistics",
+    "0 dependencies — pure Python 3"
+  ],
+  "framework": "P.R.O.F.I.T. — Project Revenue & Operational Financial Intelligence Tracker",
+  "created": "2026-07-18",
+  "author": "AI Revenue Toolkit"
+}

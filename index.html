@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Agency Project Profitability Analyzer — Track Margins, Budget Burn & Client Profit</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #05070a;
+  --surface: #0d1117;
+  --surface2: #161b22;
+  --border: #21262d;
+  --text: #f0f6fc;
+  --text2: #8b949e;
+  --amber: #f59e0b;
+  --amber-dim: #b45309;
+  --blue: #3b82f6;
+  --green: #22c55e;
+  --red: #ef4444;
+  --purple: #a855f7;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+body { min-height: 100vh; }
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(245,158,11,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245,158,11,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.animated-bg {
+  position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+  background: radial-gradient(ellipse at 20% 50%, rgba(245,158,11,0.08) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 20%, rgba(168,85,247,0.05) 0%, transparent 50%),
+              radial-gradient(ellipse at 50% 80%, rgba(59,130,246,0.05) 0%, transparent 50%);
+  animation: gradient 15s ease infinite;
+  background-size: 400% 400%;
+  pointer-events: none;
+  z-index: 0;
+}
+.container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; position: relative; z-index: 1; }
+header { text-align: center; padding: 4rem 0 3rem; }
+.badge {
+  display: inline-block;
+  background: rgba(245,158,11,0.12);
+  color: var(--amber);
+  border: 1px solid rgba(245,158,11,0.25);
+  padding: 0.35rem 1rem;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 1.5rem;
+}
+h1 {
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.15;
+  background: linear-gradient(135deg, var(--amber), #d97706, #b45309);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+}
+.subtitle {
+  font-size: 1.15rem;
+  color: var(--text2);
+  max-width: 650px;
+  margin: 0 auto 2rem;
+}
+.cta-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.btn {
+  display: inline-block;
+  padding: 0.85rem 2rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--amber), #d97706);
+  color: #000;
+  box-shadow: 0 4px 20px rgba(245,158,11,0.3);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 30px rgba(245,158,11,0.4); }
+.btn-secondary {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { border-color: var(--amber); }
+
+/* Hero metrics */
+.hero-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin: 3rem 0;
+}
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+}
+.metric-card .num {
+  font-size: 1.8rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--amber), var(--blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.metric-card .label { color: var(--text2); font-size: 0.85rem; margin-top: 0.3rem; }
+
+/* Features */
+.section { margin: 4rem 0; }
+.section h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: border-color 0.2s;
+}
+.feature-card:hover { border-color: rgba(245,158,11,0.3); }
+.feature-card .icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+.feature-card h3 { font-size: 1.05rem; margin-bottom: 0.4rem; }
+.feature-card p { color: var(--text2); font-size: 0.9rem; }
+
+/* Pricing */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.pricing-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.2s;
+  position: relative;
+}
+.pricing-card.featured {
+  border-color: var(--amber);
+  background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(245,158,11,0.02));
+  box-shadow: 0 0 30px rgba(245,158,11,0.1);
+}
+.pricing-card.featured::before {
+  content: 'Best Value';
+  position: absolute;
+  top: -0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--amber), #d97706);
+  color: #000;
+  padding: 0.25rem 1rem;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.pricing-card .plan { color: var(--text2); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.pricing-card .price { font-size: 2.5rem; font-weight: 800; margin: 0.5rem 0; }
+.pricing-card .price small { font-size: 1rem; font-weight: 400; color: var(--text2); }
+.pricing-card .save { color: var(--green); font-size: 0.85rem; margin-bottom: 1rem; }
+.pricing-card ul { list-style: none; text-align: left; margin: 1.5rem 0; }
+.pricing-card ul li { padding: 0.4rem 0; font-size: 0.9rem; color: var(--text2); }
+.pricing-card ul li::before { content: '✓ '; color: var(--green); font-weight: 700; }
+.pricing-card .btn { width: 100%; margin-top: 0.5rem; }
+
+/* FAQ */
+.faq-grid { display: grid; gap: 1rem; }
+details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.2rem 1.5rem;
+  cursor: pointer;
+}
+details[open] { border-color: rgba(245,158,11,0.3); }
+summary {
+  font-weight: 600;
+  font-size: 1rem;
+  outline: none;
+  color: var(--text);
+}
+details p { color: var(--text2); margin-top: 0.8rem; font-size: 0.9rem; line-height: 1.7; }
+
+/* Email capture */
+.email-section {
+  background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(168,85,247,0.05));
+  border: 1px solid rgba(245,158,11,0.15);
+  border-radius: 20px;
+  padding: 3rem 2rem;
+  text-align: center;
+  margin: 4rem 0;
+}
+.email-section h2 { margin-bottom: 0.5rem; }
+.email-section p { color: var(--text2); margin-bottom: 1.5rem; }
+.email-form { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
+.email-form input {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.95rem;
+  min-width: 280px;
+}
+.email-form input:focus { outline: none; border-color: var(--amber); }
+.email-form .btn { min-width: 140px; }
+
+footer { text-align: center; color: var(--text2); font-size: 0.8rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+footer a { color: var(--amber); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="animated-bg"></div>
+<div class="container">
+
+<header>
+  <div class="badge">⚡ Zero-Dependency Python CLI Tool</div>
+  <h1>📊 Agency Project<br>Profitability Analyzer</h1>
+  <p class="subtitle">Track project margins, budget burn rates, and client profitability in real-time. Interactive dashboards. No dependencies. One command.</p>
+  <div class="cta-buttons">
+    <a href="#pricing" class="btn btn-primary">Buy Now — $14</a>
+    <a href="#features" class="btn btn-secondary">See Features ↓</a>
+  </div>
+</header>
+
+<div class="hero-metrics">
+  <div class="metric-card"><div class="num">3</div><div class="label">Projects Tracked (Sample)</div></div>
+  <div class="metric-card"><div class="num">$82.5K</div><div class="label">Portfolio Budget</div></div>
+  <div class="metric-card"><div class="num">48.2%</div><div class="label">Avg Portfolio Margin</div></div>
+  <div class="metric-card"><div class="num">5</div><div class="label">Output Formats</div></div>
+</div>
+
+<section class="section" id="features">
+  <h2>🚀 What You Get</h2>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="icon">📈</div>
+      <h3>Margin Tracking</h3>
+      <p>Real-time profit margin calculations per project. Compare against your target margin with color-coded health indicators.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">⏱️</div>
+      <h3>Time Entry Logging</h3>
+      <p>Log hours with cost rates and bill rates. Track effective hourly rate vs. internal cost for every project.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">📊</div>
+      <h3>Interactive Dashboard</h3>
+      <p>Export a beautiful, interactive HTML dashboard with visual health indicators, budget bars, and portfolio summaries.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">📋</div>
+      <h3>CSV & JSON Export</h3>
+      <p>Export profitability reports to CSV for spreadsheet analysis or JSON for API integration.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">⚙️</div>
+      <h3>Customizable Settings</h3>
+      <p>Configure bill rates, internal cost rates, overhead percentage, and target margin thresholds to match your agency.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🚫</div>
+      <h3>Zero Dependencies</h3>
+      <p>Pure Python 3 — no pip installs, no requirements.txt, no npm. Works on any system with Python 3.6+.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="pricing">
+  <h2>💰 Pricing</h2>
+  <div class="pricing-grid">
+    <div class="pricing-card">
+      <div class="plan">Standalone</div>
+      <div class="price">$14 <small>one-time</small></div>
+      <ul>
+        <li>Full Python CLI tool</li>
+        <li>Interactive HTML dashboard</li>
+        <li>CSV & JSON export</li>
+        <li>Unlimited projects</li>
+        <li>Email support</li>
+        <li>Lifetime updates</li>
+      </ul>
+      <a href="#" class="btn btn-primary">Buy $14</a>
+    </div>
+    <div class="pricing-card featured">
+      <div class="plan">Revenue Bundle</div>
+      <div class="price">$37 <small>one-time</small></div>
+      <div class="save">Save 36% — $58 value</div>
+      <ul>
+        <li>Profitability Analyzer</li>
+        <li>+ Budget Forecasting Tool</li>
+        <li>+ Client ROI Reporter</li>
+        <li>All future updates</li>
+        <li>Priority email support</li>
+        <li>Commercial license</li>
+      </ul>
+      <a href="#" class="btn btn-primary">Buy $37</a>
+    </div>
+    <div class="pricing-card">
+      <div class="plan">Agency License</div>
+      <div class="price">$97 <small>one-time</small></div>
+      <ul>
+        <li>Everything in Bundle</li>
+        <li>All AI Agency Tools</li>
+        <li>White-label rights</li>
+        <li>Multi-user access</li>
+        <li>Priority support</li>
+        <li>Custom integrations</li>
+      </ul>
+      <a href="#" class="btn btn-primary">Buy $97</a>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="faq">
+  <h2>❓ FAQ</h2>
+  <div class="faq-grid">
+    <details>
+      <summary>What exactly does this tool do?</summary>
+      <p>The Agency Project Profitability Analyzer is a Python CLI tool that helps agencies track project budgets, log time entries with cost rates, calculate profit margins, and export interactive dashboards. It's like having a financial analyst in your terminal — no cloud accounts, no subscriptions, just pure data.</p>
+    </details>
+    <details>
+      <summary>How is profit margin calculated?</summary>
+      <p>Margin = (Total Billed − Total Expense) ÷ Total Billed × 100. Total Expense = (Hours × Cost Rate) + Overhead. Overhead is configurable (default 15%). The tool compares your actual margin against your target (default 40%) with 🟢 green/🟡 yellow/🔴 red health indicators.</p>
+    </details>
+    <details>
+      <summary>Do I need to install anything besides Python?</summary>
+      <p>No! The tool is zero-dependency — it uses only Python 3 standard library modules (json, csv, os, sys, datetime, pathlib, textwrap). Just download the .py file and run it.</p>
+    </details>
+    <details>
+      <summary>Can I use this for multiple clients?</summary>
+      <p>Yes. The tool supports unlimited projects and clients. Use <code>--add-project</code> to create new projects, then log time entries against each one. The portfolio-wide summary aggregates everything.</p>
+    </details>
+    <details>
+      <summary>What output formats are supported?</summary>
+      <p>Four formats: (1) Colorized console report, (2) JSON for programmatic use, (3) CSV for spreadsheet analysis, (4) Interactive HTML dashboard with visual bars, health tags, and portfolio summary.</p>
+    </details>
+    <details>
+      <summary>Can I customize the settings?</summary>
+      <p>Yes. Use <code>--set hourly_bill_rate=175</code>, <code>--set internal_cost_rate=60</code>, <code>--set overhead_pct=20</code>, or <code>--set target_margin_pct=35</code>. Settings are persisted locally.</p>
+    </details>
+  </div>
+</section>
+
+<div class="email-section">
+  <h2>📩 Get Updates & Free Templates</h2>
+  <p>Join 200+ agency owners using AI Revenue Toolkit. Get free profitability templates + early access to new tools.</p>
+  <form class="email-form" action="#" method="post">
+    <input type="email" placeholder="your@email.com" required />
+    <button type="submit" class="btn btn-primary">Subscribe Free</button>
+  </form>
+</div>
+
+<footer>
+  <p><strong>Agency Project Profitability Analyzer</strong> v1.0.0 — Part of the <a href="https://tennie321.github.io/ai-revenue-toolkit/">AI Revenue Toolkit</a></p>
+  <p style="margin-top:0.3rem;">Standalone $14 • Bundle $37 • Agency License $97</p>
+</footer>
+
+</div>
+</body>
+</html>
